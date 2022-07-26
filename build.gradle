@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'io.spring.dependency-management' version "1.0.11.RELEASE"
     id 'org.springframework.boot' version '2.6.2'
+    id 'antlr'
 }
 
 group 'hr.mmaracic.ruleprocessing'
@@ -19,6 +20,9 @@ dependencies {
     implementation "org.drools:drools-core:${droolsVersion}"
     implementation "org.drools:drools-compiler:${droolsVersion}"
     implementation "org.drools:drools-decisiontables:${droolsVersion}"
+
+    //antlr
+    antlr("org.antlr:antlr4:${antlrVersion}")
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

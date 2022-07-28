@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'io.spring.dependency-management' version "1.0.11.RELEASE"
     id 'org.springframework.boot' version '2.6.2'
+    id "org.openapi.generator" version "6.0.1"
 }
 
 group 'hr.mmaracic.ruleprocessing'
@@ -25,4 +26,24 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+openApiValidate {
+    inputSpec = "$rootDir/petstore-v3.0-invalid.yaml".toString()
+}
+
+openApiGenerate {
+    generatorName = "java"
+    verbose = true
+    validateSpec = true
+    outputDir = "$rootDir/src/main/codegen"
+    inputSpec = "$rootDir/openapi/Rules.yaml"
+    skipOverwrite = false
+    apiPackage = "hr.mmaracic.rulepr.api"
+    modelPackage = "hr.mmaracic.rulepr.model.domain"
+    //typeMappings
+    //languageSpecificPrimitives
+    configOptions = [
+            dateLibrary: "java8"
+    ]
 }

@@ -1,0 +1,146 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Route Catalog API
+  description: A Route Catalog rule API
+paths:
+  /ruleList:
+    get:
+      summary: Get a list of rules
+      description: Get a list of rules that represents a page of a whole list
+      operationId: ruleList
+      parameters:
+        - name: limit
+          in: query
+          description: Page size
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Page start
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully returned a list of rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/FilteringRule'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    FilteringAction:
+      type: string
+      enum:
+        - Enable
+        - Disable
+        - Replace
+    BinaryLogicalOperator:
+      type: string
+      enum:
+        - AND
+        - OR
+    UnaryLogicalOperator:
+      type: string
+      enum:
+        - IS
+        - IS NOT
+    ComparisonOperator:
+      type: string
+      enum:
+      - ==
+      - >
+      - =>
+      - <
+      - <=
+      - '!='
+    Attribute:
+      type: string
+      enum:
+        - POL
+        - POD
+        - VIA1
+        - VIA2
+        - VIA3
+        - VIA4
+        - VIA5
+        - VIA6
+        - VIA7
+        - VIA8
+        - VIA9
+    ValueType:
+      type: string
+      enum:
+        - Integer
+        - Double
+        - String
+        - Port
+        - Channel
+        - Cabotage
+    Condition:
+      type: object
+      properties:
+        comparisonOperator:
+          $ref: '#/components/schemas/ComparisonOperator'
+        valueType:
+          $ref: '#/components/schemas/ValueType'
+        value:
+          type: string
+      required:
+        - comparisonOperator
+        - valueType
+        - value
+    Expression:
+      type: object
+      properties:
+        attribute:
+          $ref: '#/components/schemas/Attribute'
+        unaryLogicalOperator:
+          $ref: '#/components/schemas/UnaryLogicalOperator'
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+          minItems: 1
+      required:
+        - attribute
+        - conditions
+    CompositeExpression:
+      type: object
+      properties:
+        binaryLogicalOperator:
+          $ref: '#/components/schemas/BinaryLogicalOperator'
+        expression:
+          $ref: '#/components/schemas/Expression'
+      required:
+        - binaryLogicalOperator
+        - expression
+    FilteringRule:
+      type: object
+      properties:
+        filteringAction:
+          $ref: '#/components/schemas/FilteringAction'
+        expression:
+          $ref: '#/components/schemas/Expression'
+        compositeExpression:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompositeExpression'
+          minItems: 1
+      required:
+        - filteringAction
+        - expression

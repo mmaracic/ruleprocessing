@@ -21,6 +21,10 @@ dependencies {
     implementation "org.drools:drools-compiler:${droolsVersion}"
     implementation "org.drools:drools-decisiontables:${droolsVersion}"
 
+    //openAPI
+    implementation "org.springdoc:springdoc-openapi-ui:${springdocVersion}"
+    implementation "org.openapitools:jackson-databind-nullable:${nullableVersion}"
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
@@ -28,22 +32,22 @@ test {
     useJUnitPlatform()
 }
 
-openApiValidate {
-    inputSpec = "$rootDir/petstore-v3.0-invalid.yaml".toString()
-}
-
 openApiGenerate {
-    generatorName = "java"
-    verbose = true
+    generatorName = "spring"
+    verbose = false
     validateSpec = true
-    outputDir = "$rootDir/src/main/codegen"
+    outputDir = "$rootDir"
     inputSpec = "$rootDir/openapi/Rules.yaml"
     skipOverwrite = false
     apiPackage = "hr.mmaracic.rulepr.api"
     modelPackage = "hr.mmaracic.rulepr.model.domain"
-    //typeMappings
-    //languageSpecificPrimitives
     configOptions = [
-            dateLibrary: "java8"
+            delegatePattern: "true",
+            dateLibrary: "java8",
+            serializationLibrary: "jackson",
+            configPackage: "hr.mmaracic.rulepr.configuration",
+            basePackage: "hr.mmaracic.rulepr"
     ]
 }
+
+compileJava.dependsOn tasks.openApiGenerate

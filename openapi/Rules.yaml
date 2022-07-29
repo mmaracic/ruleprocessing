@@ -28,8 +28,7 @@ paths:
               schema:
                 type: array
                 items:
-                  oneOf:
-                    - $ref: '#/components/schemas/FilteringRule'
+                  $ref: '#/components/schemas/FilteringRule'
         '400':
           description: Invalid request
           content:
@@ -43,6 +42,13 @@ components:
       properties:
         message:
           type: string
+    BasicRule:
+      type: object
+      properties:
+        priority:
+          type: integer
+      required:
+        - priority
     FilteringAction:
       type: string
       enum:
@@ -62,11 +68,11 @@ components:
     ComparisonOperator:
       type: string
       enum:
-      - ==
-      - >
-      - =>
-      - <
-      - <=
+      - '='
+      - '>'
+      - '>='
+      - '<'
+      - '<='
       - '!='
     Attribute:
       type: string
@@ -92,6 +98,8 @@ components:
         - Channel
         - Cabotage
     Condition:
+      example: '"conditions":[{"comparisonOperator":"=","valueType":"Integer","value":"0"}]'
+      description: Condition on attribute - consists of comparison operator and value
       type: object
       properties:
         comparisonOperator:
@@ -130,17 +138,19 @@ components:
         - binaryLogicalOperator
         - expression
     FilteringRule:
-      type: object
-      properties:
-        filteringAction:
-          $ref: '#/components/schemas/FilteringAction'
-        expression:
-          $ref: '#/components/schemas/Expression'
-        compositeExpression:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompositeExpression'
-          minItems: 1
-      required:
-        - filteringAction
-        - expression
+      allOf:
+        - $ref: '#/components/schemas/BasicRule'
+        - type: object
+          properties:
+            filteringAction:
+              $ref: '#/components/schemas/FilteringAction'
+            expression:
+              $ref: '#/components/schemas/Expression'
+            compositeExpression:
+              type: array
+              items:
+                $ref: '#/components/schemas/CompositeExpression'
+              minItems: 1
+          required:
+            - filteringAction
+            - expression

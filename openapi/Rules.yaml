@@ -28,7 +28,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/FilteringRule'
+                  $ref: '#/components/schemas/BasicRule'
         '400':
           description: Invalid request
           content:
@@ -42,19 +42,6 @@ components:
       properties:
         message:
           type: string
-    BasicRule:
-      type: object
-      properties:
-        priority:
-          type: integer
-      required:
-        - priority
-    FilteringAction:
-      type: string
-      enum:
-        - Enable
-        - Disable
-        - Replace
     BinaryLogicalOperator:
       type: string
       enum:
@@ -98,7 +85,6 @@ components:
         - Channel
         - Cabotage
     Condition:
-      example: '"conditions":[{"comparisonOperator":"=","valueType":"Integer","value":"0"}]'
       description: Condition on attribute - consists of comparison operator and value
       type: object
       properties:
@@ -137,20 +123,43 @@ components:
       required:
         - binaryLogicalOperator
         - expression
+    BasicRule:
+      type: object
+      discriminator:
+        propertyName: action
+      properties:
+        priority:
+          type: integer
+        action:
+          type: string
+        expression:
+          $ref: '#/components/schemas/Expression'
+        compositeExpression:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompositeExpression'
+          minItems: 1
+      required:
+        - action
+        - expression
+        - priority
     FilteringRule:
       allOf:
         - $ref: '#/components/schemas/BasicRule'
         - type: object
           properties:
-            filteringAction:
-              $ref: '#/components/schemas/FilteringAction'
-            expression:
-              $ref: '#/components/schemas/Expression'
-            compositeExpression:
-              type: array
-              items:
-                $ref: '#/components/schemas/CompositeExpression'
-              minItems: 1
+            action:
+              type: string
+              pattern: Enable|Disable
           required:
-            - filteringAction
-            - expression
+            - action
+    ReplacementRule:
+      allOf:
+        - $ref: '#/components/schemas/BasicRule'
+        - type: object
+          properties:
+            action:
+              type: string
+              pattern: Replace
+          required:
+            - action

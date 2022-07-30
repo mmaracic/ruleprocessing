@@ -39,24 +39,29 @@ paths:
 components:
   schemas:
     ErrorResponse:
+      description: Response returned in case of error
       type: object
       properties:
         message:
+          description: Error message
           type: string
 
     BinaryLogicalOperator:
+      description: Enum of binary logical operators to be used in a rule
       type: string
       enum:
         - AND
         - OR
 
     UnaryLogicalOperator:
+      description: Enum of unary logical operators to be used in on a rule attribute
       type: string
       enum:
         - IS
         - IS NOT
 
     ComparisonOperator:
+      description: Comparison attributes to be sed in conditions that apply to attributes
       type: string
       enum:
       - '='
@@ -67,6 +72,7 @@ components:
       - '!='
 
     Attribute:
+      description: Enum of route attributes that can participate in rule expressions
       type: string
       enum:
         - POL
@@ -82,6 +88,7 @@ components:
         - VIA9
 
     ValueType:
+      description: Object that describes attribute value type - primitive or configurable object types
       type: string
       enum:
         - Integer
@@ -92,14 +99,17 @@ components:
         - Cabotage
 
     Condition:
-      description: Condition on attribute - consists of comparison operator and value
+      description: Condition on attribute - consists of comparison operator, value type and value
       type: object
       properties:
         comparisonOperator:
+          description: Comparison operator that needs to be selected from the ones available in the enum
           $ref: '#/components/schemas/ComparisonOperator'
         valueType:
+          description: Value type of the value used to narrow the set of allowed values
           $ref: '#/components/schemas/ValueType'
         value:
+          description: Value that is compared to the current attribute value
           type: string
       required:
         - comparisonOperator
@@ -107,96 +117,132 @@ components:
         - value
 
     Expression:
+      description: Simple expression applies a condition to an attribute with a possible unary negative included
       type: object
       properties:
         attribute:
+          description: Expression attribute
           $ref: '#/components/schemas/Attribute'
         unaryLogicalOperator:
+          description: Unary operator applied to the conditions that apply to the attribute
           $ref: '#/components/schemas/UnaryLogicalOperator'
         conditions:
+          description: 1 or 2 conditions that apply to the attribute. Unary operator applies on all available conditions. 2 conditions define ranges
           type: array
           items:
             $ref: '#/components/schemas/Condition'
           minItems: 1
+          maxItems: 2
       required:
         - attribute
         - unaryLogicalOperator
         - conditions
 
     ReplaceExpression:
+      description: Simple expression that enables substitution of one value with another for some attribute
       type: object
       properties:
         attribute:
+          description: Expression attribute
           $ref: '#/components/schemas/Attribute'
-        unaryLogicalOperator:
-          $ref: '#/components/schemas/UnaryLogicalOperator'
         oldValueType:
+          description: Type of the attribute value to be replaced
           $ref: '#/components/schemas/ValueType'
         oldValue:
+          description: Attribute value to be replaced
           type: string
         newValueType:
+          description: Type of the attribute value that will be used as replacement
           $ref: '#/components/schemas/ValueType'
         newValue:
+          description: Attribute value used as replacement
           type: string
       required:
         - attribute
-        - unaryLogicalOperator
         - oldValueType
         - oldValue
         - newValueType
         - newValue
 
     CompositeExpression:
+      description: Complex expression that connects multiple simple expressions with binary logical operators
       type: object
       properties:
         binaryLogicalOperator:
+          description: Binary operator connecting the simple expressions, selected from an enum
           $ref: '#/components/schemas/BinaryLogicalOperator'
         expression:
+          description: Simple expression connected by logical operator
           $ref: '#/components/schemas/Expression'
       required:
         - binaryLogicalOperator
         - expression
 
     BasicRule:
+      description: Basic rule with no action i.e. consequence, only the selection expressions/conditions
       type: object
       discriminator:
         propertyName: action
       properties:
+        name:
+          description: 'Name of the rule'
+          type: string
         priority:
+          description: Priority of the rule
+          type: integer
+        enabled:
+          description: Y if the rule is active to be applied, N if it is inactive and wont be applied
+          type: string
+          enum:
+            - Y
+            - N
+        version:
+          description: Version of the rule
           type: integer
         action:
+          description: Action i.e. consequences of the rule applied to one or more routes
           type: string
         expression:
+          description: Basic condition expression that selects routes that the rule applies to
           $ref: '#/components/schemas/Expression'
         compositeExpression:
+          description: Optional list of composite expressions that selects routes that the rule applies to
           type: array
           items:
             $ref: '#/components/schemas/CompositeExpression'
           minItems: 1
       required:
+        - name
+        - priority
+        - enabled
+        - version
         - action
         - expression
-        - priority
 
     FilteringRule:
+      description: Subtype of rule that marks the route as valid or invalid
       allOf:
         - $ref: '#/components/schemas/BasicRule'
         - type: object
           properties:
             action:
+              description: Action Enable means that the route is valid and accepted, disable means that it is invalid and discarded
               type: string
               pattern: Enable|Disable
           required:
             - action
 
     ReplacementRule:
+      description: Subtype of rule "replaces" an attribute value. Implemented as two rules one Enable and one Disable. No replacement actually takes place.
       allOf:
         - $ref: '#/components/schemas/BasicRule'
         - type: object
           properties:
             replaceExpression:
+              description: Expressions that determines which values are "replaced" and in which attribute
               $ref: '#/components/schemas/ReplaceExpression'
             action:
+              description: One possible value - Replace that identifies the rule
               type: string
               pattern: Replace
           required:
